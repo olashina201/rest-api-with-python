@@ -1,15 +1,16 @@
 import os
-from chalice.app import Chalice
+from chalice.app import Chalice, AuthResponse
 import boto3
-from chalice import Chalice, AuthResponse
 from chalicelib import  db
 app = Chalice(app_name='rest-api-with-python')
+app.debug = True
+_DB = None
 
 
 def get_app_db():
     global _DB
     if _DB is None:
-        _DB = db.DynamoDBTodo(
+        _DB = db.DynamoDBBlog(
             boto3.resource('dynamodb').Table(
                 os.environ['APP_TABLE_NAME'])
         )
