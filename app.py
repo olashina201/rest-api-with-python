@@ -1,32 +1,63 @@
+from boto3.dynamodb.conditions import Key
 import os
 from chalice.app import Chalice, AuthResponse
 import boto3
-from chalicelib import  db
+from chalicelib import db
 app = Chalice(app_name='rest-api-with-python')
-app.debug = True
-_DB = None
 
 
 def get_app_db():
-    global _DB
-    if _DB is None:
-        _DB = db.DynamoDBBlog(
-            boto3.resource('dynamodb').Table(
-                os.environ['APP_TABLE_NAME'])
-        )
-    return _DB
+    dynamodb = boto3.resource("dynamodb")
+    table = dynamodb.Table('my-demo-table')
+    return table
+
 
 @app.route('/')
 def index():
     return {'hello': 'world'}
 
+
 @app.route('/blogs', methods=['GET'])
 def list_blogs():
-    return get_app_db().list_items()
+    response = get_app_db().scan()
+    data = response.get('Items', None)
+    return {'data': data}
 
 
 @app.route('/post', methods=['POST'])
 def create_post():
-    request = app.current_request
-    message = request.json_body
-    return message
+    data = app.current_request.json_body
+    try:
+        get_app_db().put_item(Item={
+            'id': data['id'],
+            "title": data['title'],
+            "author": data['author']
+        })
+        return {'message': 'ok - CREATED', 'status': 201, "id": data['id'], "title": data['title'], "author": data['author']}
+    except Exception as e:
+        return {'message': str(e)}
+
+
+@app.route('/blog/{id}', methods=['GET'])
+def get_blog(id):
+    response = get_app_db().query(
+        KeyConditionExpression=Key("id").eq(id)
+    )
+    data = response.get('Items', None)
+    return {'data': data}
+
+
+@app.route('/blog/{id}', methods=['DELETE'])
+def delete_blog(id):
+    data = app.current_request.json_body
+    try:
+        response = get_app_db().delete_item(
+            Key={
+                "id": data['id'],
+                "author": data['author']
+            }
+        )
+        return {'message': 'ok - DELETED', 'status': 201}
+
+    except Exception as e:
+        return {'message': str(e)}
