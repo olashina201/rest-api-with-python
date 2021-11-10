@@ -60,3 +60,25 @@ def delete_blog(id):
 
     except Exception as e:
         return {'message': str(e)}
+
+@app.route('/blog/{id}', methods=['PUT'])
+def update_blog(id):
+    data = app.current_request.json_body
+    try:
+        get_app_db().update_item(Key={
+            "id": data['id'],
+            "title": data['title'],
+            "description": data['description'],
+            "content": data['content']
+        },
+            UpdateExpression="set title=:r",
+            ExpressionAttributeValues={
+            ":r": data['title'],
+            ":r": data['description'],
+            ":r": data['content']
+        },
+            ReturnValues="UPDATED_NEW"
+        )
+        return {'message': 'ok - UPDATED', 'status': 201}
+    except Exception as e:
+        return {'message': str(e)}
