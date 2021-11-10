@@ -1,6 +1,6 @@
 from boto3.dynamodb.conditions import Key
 import os
-from chalice.app import Chalice, AuthResponse
+from chalice.app import Chalice
 import boto3
 from chalicelib import db
 app = Chalice(app_name='rest-api-with-python')
@@ -8,7 +8,7 @@ app = Chalice(app_name='rest-api-with-python')
 
 def get_app_db():
     dynamodb = boto3.resource("dynamodb")
-    table = dynamodb.Table('my-demo-table')
+    table = dynamodb.Table('blog')
     return table
 
 
@@ -29,11 +29,11 @@ def create_post():
     data = app.current_request.json_body
     try:
         get_app_db().put_item(Item={
-            'id': data['id'],
             "title": data['title'],
-            "author": data['author']
+            "description": data['description'],
+            "content": data['content']
         })
-        return {'message': 'ok - CREATED', 'status': 201, "id": data['id'], "title": data['title'], "author": data['author']}
+        return {'message': 'ok - CREATED', 'status': 201, 'data': data}
     except Exception as e:
         return {'message': str(e)}
 
