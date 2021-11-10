@@ -1,8 +1,7 @@
-from boto3.dynamodb.conditions import Key
 import os
 from chalice.app import Chalice
 import boto3
-from chalicelib import db
+from boto3.dynamodb.conditions import Key
 app = Chalice(app_name='rest-api-with-python')
 
 
