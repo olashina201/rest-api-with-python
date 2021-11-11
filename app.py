@@ -6,7 +6,7 @@ app = Chalice(app_name='rest-api-with-python')
 
 
 def get_app_db():
-    dynamodb = boto3.resource("dynamodb")
+    dynamodb = boto3.resource("DynamodDb")
     table = dynamodb.Table('blog')
     return table
 
@@ -27,7 +27,8 @@ def list_blogs():
 def create_post():
     data = app.current_request.json_body
     try:
-        get_app_db().put_item(Item={
+        get_app_db().putItem(Item={
+            "id":data['id'],
             "title": data['title'],
             "description": data['description'],
             "content": data['content']
